@@ -21,19 +21,19 @@
 #define INPUT_PIN                   (23)          /* PIN used as input */
 #define OUTPUT_PIN                  (53)          /* PIN used as output */
 
-// PINs definition // <---------------------------------- TODO: check
-const int T_PIN = 2; // pin for T signal
-const int PW_PIN = 3; // pin for PW signal
+// PINs definition // <---------------------------------- TODO: check if it's necessary
+const int T_PIN = 2;        /* pin for T signal */
+const int PW_PIN = 3;       /* pin for PW signal */
 
 // Definition of the FSM states as an enumerated set of values
 enum fsm {
-  UNCOUPLED = 0,    /* UNCOUPLED: I have not recognized any valid period yet */
-  COUPLING,         /*  COUPLING: I have recognized a single valid period, waiting for the second one */
-  COUPLED           /*   COUPLED: I have recognized at least two valid periods, the frequency is correctly recognized */
+  UNCOUPLED = 0,            /* UNCOUPLED: I have not recognized any valid period yet */
+  COUPLING,                 /*  COUPLING: I have recognized a single valid period, waiting for the second one */
+  COUPLED                   /*   COUPLED: I have recognized at least two valid periods, the frequency is correctly recognized */
 };
 
 // State initialization
-fsm currentState = UNCOUPLED; // <--------------------- TODO: check
+fsm currentState = UNCOUPLED; // <----------------------- TODO: check if it's necessary
 
 // List of static variables (common to all functions)
 static uint32_t frequency;  /* Frequency to be recognized (mHz) without tolerance */
@@ -49,17 +49,17 @@ static void printDutyCycleRange(bool bInvalid);
 static void printConfig(void);
 static void configure(void);
 
-// ... TODO: add comment
+// Setup function: configure serial port, await parameters, save configuration, set up two I/O pins, close port
 void setup() {
   String tmp;
   unsigned long value;
   int bValid;
   
-  /*Initialize serial and wait for port to open*/
+  // Initialize serial and wait for port to open
   SerialUSB.begin(9600);
   SerialUSB.setTimeout(60000);
   while (!SerialUSB) {
-    ; /*wait for serial port to connect. Needed for native USB*/
+    ; // wait for serial port to connect. Needed for native USB
   }
 
   SerialUSB.println("Configuring Frequency Detector...");
@@ -99,7 +99,7 @@ void setup() {
   SerialUSB.end();
 }
 
-// ... TODO: add comment
+// Loop function: implements the FSM to recognise the configured frequency 
 void loop() {
   
   // TODO: implement
@@ -153,7 +153,7 @@ static void printConfig(void) {
 }
 
 
-// ... TODO: add comment
+// Calculate min/max period and min/max pulse width in microseconds. Configure INPUT_PIN and OUTPUT_PIN as input/output.
 static void configure(void) {
 
   // TODO: implement
