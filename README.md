@@ -40,5 +40,6 @@ For detailed instructions on setup and usage, refer to the project documentation
 
 ---
 
-**Author:** **Authors:** [Alessandro Bonciani](https://github.com/alebonch), [Elia Innocenti](https://github.com/eliainnocenti), [Francesco Taccetti](https://github.com/Tacce)
-**Contact:** [alessandro.bonciani@edu.unifi.it](mailto:alessandro.bonciani@edu.unifi.it), [elia.innocenti@edu.unifi.it](mailto:elia.innocenti@edu.unifi.it), [francesco.taccetti@edu.unifi.it](mailto:francesco.taccetti@edu.unifi.it)
+**Authors:** [Alessandro Bonciani](https://github.com/alebonch), [Elia Innocenti](https://github.com/eliainnocenti), [Francesco Taccetti](https://github.com/Tacce)
+
+**Contacts:** [alessandro.bonciani@edu.unifi.it](mailto:alessandro.bonciani@edu.unifi.it), [elia.innocenti@edu.unifi.it](mailto:elia.innocenti@edu.unifi.it), [francesco.taccetti@edu.unifi.it](mailto:francesco.taccetti@edu.unifi.it)
