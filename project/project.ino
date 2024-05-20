@@ -28,8 +28,8 @@ const int PW_PIN = 3; // pin for PW signal
 // Definition of the FSM states as an enumerated set of values
 enum fsm {
   UNCOUPLED = 0,    /* UNCOUPLED: I have not recognized any valid period yet */
-  COUPLING,         /* COUPLING: I have recognized a single valid period, waiting for the second one */
-  COUPLED           /* COUPLED: I have recognized at least two valid periods, the frequency is correctly recognized */
+  COUPLING,         /*  COUPLING: I have recognized a single valid period, waiting for the second one */
+  COUPLED           /*   COUPLED: I have recognized at least two valid periods, the frequency is correctly recognized */
 };
 
 // State initialization
@@ -49,16 +49,7 @@ static void printDutyCycleRange(bool bInvalid);
 static void printConfig(void);
 static void configure(void);
 
-
-/*------------------------------------------------------------------*/
-/*Funzione setup                                                    */
-/*Configura Arduino Due                                             */
-/*Viene chiamata automaticamente da Arduino                         */
-/*Configura la porta seriale, aspetta i parametri di configurazione */
-/*da seriale, salva la configurazione, configura i due PIN di input */
-/*e output, chiude la porta seriale                                 */
-/*NOTA: questa funzione non va modificata                           */
-/*------------------------------------------------------------------*/
+// ... TODO: add comment
 void setup() {
   String tmp;
   unsigned long value;
@@ -108,64 +99,14 @@ void setup() {
   SerialUSB.end();
 }
 
-
-/*------------------------------------------------------------------*/
-/*Funzione loop                                                     */
-/*Esegue il main loop di Arduino Due                                */
-/*Viene chiamata automaticamente da Arduino                         */
-/*Implementa la FSM per riconoscere la frequenza configurata        */
-/*NOTA: questa funzione deve essere scritta da voi :)               */
-/*------------------------------------------------------------------*/
+// ... TODO: add comment
 void loop() {
-  /*NOTA: per minimizzare il jitter del riconoscitore di frequenza, questa funzione non dovrebbe  */
-  /*mai ritornare ad Arduino ma realizzare un ciclo infinito                                      */
-
-  /*Acquisisco il tempo corrente (in us) e lo stato corrente dell'ingresso                        */
-  /*A seconda dello stato della FSM effettuo una delle seguenti operazioni:                       */
-  /*UNCOUPLED:  Se lo stato corrente dell'ingresso non è cambiato rispetto al precedente non      */
-  /*            devo fare nulla                                                                   */
-  /*            Se lo stato corrente è cambiato devo valutare se ho avuto un rising edge o un     */
-  /*            falling edge. Sul falling edge devo controllare se il tempo dall'ultimo rising    */
-  /*            edge (la larghezza d'impulso) è compreso fra TON_min e TON_max, se è vero allora  */
-  /*            ho avuto un TON valido, altrimenti ho un TON invalido. Se ho un rising edge       */
-  /*            allora controllo se il tempo dall'ultimo rising edge (il periodo) è compreso fra  */
-  /*            T_min e T_max, se è vero e il TON precedente era valido allora vado nello stato   */
-  /*            COUPLING, altrimenti ho avuto un TON invalido. Infine, se ho avuto un rising      */
-  /*            edge, aggiorno il tempo dell'ultimo rising edge                                   */
-  /*COUPLING:   Se lo stato corrente dell'ingresso non è cambiato rispetto al precedente devo     */
-  /*            controllare di non aver superato il valore massimo di TON (se lo stato corrente è */
-  /*            alto) oppure il valore massimo di T (se è basso). Se ho passato uno dei due       */
-  /*            valori massimi ammessi allora dichiaro l'ultimo TON invalido e torno nello stato  */
-  /*            UNCOUPLED                                                                         */
-  /*            Se lo stato corrente è cambiato devo valutare se ho avuto un rising edge o un     */
-  /*            falling edge. Sul falling edge devo controllare se il tempo dall'ultimo rising    */
-  /*            edge (la larghezza d'impulso) è compreso fra TON_min e TON_max, se non è vero     */
-  /*            allora ho avuto un TON invalido e torno nello stato UNCOUPLED. Se ho un rising    */
-  /*            edge allora controllo se il tempo dall'ultimo rising edge (il periodo) è compreso */
-  /*            fra T_min e T_max, se è vero allora vado nello stato COUPLED e accendo l'uscita,  */
-  /*            altrimenti ho avuto un TON invalido e torno nello stato UNCOUPLED. Infine, se ho  */
-  /*            avuto un rising edge, aggiorno il tempo dell'ultimo rising edge                   */
-  /*COUPLED:    Se lo stato corrente dell'ingresso non è cambiato rispetto al precedente devo     */
-  /*            controllare di non aver superato il valore massimo di TON (se lo stato corrente è */
-  /*            alto) oppure il valore massimo di T (se è basso). Se ho passato uno dei due       */
-  /*            valori massimi ammessi allora dichiaro l'ultimo TON invalido e torno nello stato  */
-  /*            UNCOUPLED e spengo l'uscita                                                       */
-  /*            Se lo stato corrente è cambiato devo valutare se ho avuto un rising edge o un     */
-  /*            falling edge. Sul falling edge devo controllare se il tempo dall'ultimo rising    */
-  /*            edge (la larghezza d'impulso) è compreso fra TON_min e TON_max, se non è vero     */
-  /*            allora ho avuto un TON invalido, torno nello stato UNCOUPLED e spengo l'uscita.   */
-  /*            Se ho un rising edge allora controllo se il tempo dall'ultimo rising edge (il     */
-  /*            periodo) è  compreso fra T_min e T_max, se non è vero ho avuto un TON invalido,   */
-  /*            torno nello stato UNCOUPLED e spengo l'uscita. Infine, se ho avuto un rising      */
-  /*            edge, aggiorno il tempo dell'ultimo rising edge                                   */
+  
+  // TODO: implement
+    
 }
 
-
-/*------------------------------------------------------------------*/
-/*Funzione printFrequencyRange                                      */
-/*Stampa il range ammesso per la prequenza                          */
-/*NOTA: questa funzione non va modificata                           */
-/*------------------------------------------------------------------*/
+// Print the permissible range for the frequency
 static void printFrequencyRange(bool bInvalid) {
   SerialUSB.print("  ");
   if (bInvalid != false) {
@@ -178,12 +119,7 @@ static void printFrequencyRange(bool bInvalid) {
   SerialUSB.println("]");
 }
 
-
-/*------------------------------------------------------------------*/
-/*Funzione printDutyCycleRange                                      */
-/*Stampa il range ammesso per il duty cycle                         */
-/*NOTA: questa funzione non va modificata                           */
-/*------------------------------------------------------------------*/
+// Print the permissible duty cycle range 
 static void printDutyCycleRange(bool bInvalid) {
   SerialUSB.print("  ");
   if (bInvalid != false) {
@@ -196,12 +132,7 @@ static void printDutyCycleRange(bool bInvalid) {
   SerialUSB.println("]");
 }
 
-
-/*------------------------------------------------------------------*/
-/*Funzione printConfig                                              */
-/*Stampa la configurazione ricevuta (frequenza e duty cycle)        */
-/*NOTA: questa funzione non va modificata                           */
-/*------------------------------------------------------------------*/
+// Print received configuration (frequency and duty cycle)   
 static void printConfig(void) {
   SerialUSB.println();
   SerialUSB.println("Frequency Detector configuration");
@@ -222,27 +153,9 @@ static void printConfig(void) {
 }
 
 
-/*------------------------------------------------------------------*/
-/*Funzione configure                                                */
-/*Calcola i valori di periodo minimo e massimo (T_min e T_max) in   */
-/*microsecondi (us) e i valori di larghezz d'impulso minima e       */
-/*massima (TON_min e TON_max) in microsecondi (us)                  */
-/*Configura i due PIN INPUT_PIN e OUTPUT_PIN come ingresso e uscita */
-/*NOTA: questa funzione deve essere scritta da voi :)               */
-/*------------------------------------------------------------------*/
+// ... TODO: add comment
 static void configure(void) {
-  /*Calcoliamo il periodo minimo e massimo*/
-  /*T_min = 1 / f_max*/
-  /*T_max = 1 / f_min*/
-  /*NOTA: la frequenza è in mHz (quindi andrebbe divisa per 1000), il periodo lo vogliamo in microsecondi (quindi lo vorremmo moltiplicare per 10^6)*/
-  /*Per minimizzare l'errore numerico possiamo fare:*/
-  /*    T(us) = 10^9(ns) / f(mHz)     */
 
-
-  /*Calcoliamo la larghezza d'impulso minima e massima*/
-  /*TON_min = T_min * d_min / 100*/
-  /*TON_max = T_max * d_max / 100*/
-
-
-  /*Configuriamo il piedino INPUT_PIN come ingresso e il piedino OUTPUT_PIN come uscita*/
+  // TODO: implement
+    
 }
