@@ -1,4 +1,4 @@
-// EmbeddedSystem_Host-Target - arduino script
+// Embedded System Host-Target - Arduino Detector script
 
 // Minimum and maximum limits of frequency and duty cycle
 #define MIN_FREQ                    (250)         /* Minimum frequency (in mHz) */
@@ -32,8 +32,8 @@ enum fsm {
   COUPLED                   /*   COUPLED: I have recognized at least two valid periods, the frequency is correctly recognized */
 };
 
-// State initialization
-fsm currentState = UNCOUPLED; // <----------------------- TODO: check if it's necessary
+// State initialization // <----------------------------- TODO: check if it's necessary
+fsm currentState = UNCOUPLED;
 
 // List of static variables (common to all functions)
 static uint32_t frequency;  /* Frequency to be recognized (mHz) without tolerance */
@@ -96,13 +96,60 @@ void setup() {
 
   configure();
   printConfig();
-  SerialUSB.end();
+  SerialUSB.end();   
 }
 
 // Loop function: implements the FSM to recognise the configured frequency 
 void loop() {
   
   // TODO: implement
+    
+  // Possible implementation (to be checked):
+    
+  static uint32_t lastTime = 0;
+  static uint32_t period = 0;
+  static uint32_t tOn = 0;
+
+  uint32_t currentTime = micros();
+  bool signalState = digitalRead(INPUT_PIN);
+
+  switch (currentState) {
+    case UNCOUPLED:
+      if (signalState) {
+        lastTime = currentTime;
+        currentState = COUPLING;
+      }
+      break;
+    case COUPLING:
+      if (!signalState) {
+        period = currentTime - lastTime;
+        if (period >= periodMin && period <= periodMax) {
+          lastTime = currentTime;
+          tOn = pulseIn(INPUT_PIN, HIGH, periodMax);
+          if (tOn >= tOnMin && tOn <= tOnMax) {
+            currentState = COUPLED;
+            digitalWrite(OUTPUT_PIN, HIGH); // Signal recognition
+          }
+        } else {
+          currentState = UNCOUPLED;
+        }
+      }
+      break;
+    case COUPLED:
+      if (signalState) {
+        lastTime = currentTime;
+      } else {
+        period = currentTime - lastTime;
+        if (period < periodMin || period > periodMax) {
+          currentState = UNCOUPLED;
+          digitalWrite(OUTPUT_PIN, LOW); // Stop recognition signal
+        }
+      }
+      break;
+    default:
+      currentState = UNCOUPLED;
+      break;
+  }
     
 }
 
@@ -158,4 +205,15 @@ static void configure(void) {
 
   // TODO: implement
     
+  // Possible implementation (to be checked):
+    
+  periodMin = (uint32_t)((NSEC_IN_SEC / (frequency + (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);
+  periodMax = (uint32_t)((NSEC_IN_SEC / (frequency - (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);
+  
+  tOnMin = (uint32_t)(periodMin * (dutyCycle - TOLERANCE_DUTY) / HUNDRED);
+  tOnMax = (uint32_t)(periodMax * (dutyCycle + TOLERANCE_DUTY) / HUNDRED);
+  
+  pinMode(INPUT_PIN, INPUT);
+  pinMode(OUTPUT_PIN, OUTPUT);
+  digitalWrite(OUTPUT_PIN, LOW); // Ensure the output pin is initially low
 }
