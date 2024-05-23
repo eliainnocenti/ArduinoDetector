@@ -124,7 +124,6 @@ void loop() {
             if ((currentTime - lastPeriodTime) >= periodMin && (currentTime - lastPeriodTime) <= periodMax && lastValidTon) {
               // If the period is valid and the previous TON was valid
               currentState = COUPLING; // Go to the COUPLING state
-              digitalWrite(OUTPUT_PIN, HIGH); // Turn on the output
             } else {
               lastValidTon = false; // Mark that the TON is not valid
             }
