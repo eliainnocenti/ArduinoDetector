@@ -104,56 +104,102 @@ void setup() {
 
 // Loop function: implements the FSM to recognise the configured frequency 
 void loop() {
-  
-  // TODO: implement
-    
-  // Possible implementation (to be checked):
     
   static uint32_t lastTime = 0;
-  static uint32_t period = 0;
-  static uint32_t tOn = 0;
+  static uint32_t lastRisingEdgeTime = 0;
+  static uint32_t lastPeriodTime = 0;
+  static bool lastValidTon = false;
 
   uint32_t currentTime = micros();
   bool signalState = digitalRead(INPUT_PIN);
 
-  switch (currentState) {
+  switch(currentState) {
+          
     case UNCOUPLED:
-      if (signalState) {
-        lastTime = currentTime;
-        currentState = COUPLING;
-      }
-      break;
-    case COUPLING:
-      if (!signalState) {
-        period = currentTime - lastTime;
-        if (period >= periodMin && period <= periodMax) {
-          lastTime = currentTime;
-          tOn = pulseIn(INPUT_PIN, HIGH, periodMax);
-          if (tOn >= tOnMin && tOn <= tOnMax) {
-            currentState = COUPLED;
-            digitalWrite(OUTPUT_PIN, HIGH); // Signal recognition
+      if (signalState != previousSignalState) { // If the current state has changed compared to the previous one
+        if (!signalState) { // If it's a falling edge
+          uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
+          if (pulseWidth >= tOnMin && pulseWidth <= tOnMax) { // Check if the TON is valid
+            // You've had a valid TON
+            if ((currentTime - lastPeriodTime) >= periodMin && (currentTime - lastPeriodTime) <= periodMax && lastValidTon) {
+              // If the period is valid and the previous TON was valid
+              currentState = COUPLING; // Go to the COUPLING state
+              digitalWrite(OUTPUT_PIN, HIGH); // Turn on the output
+            } else {
+              lastValidTon = false; // Mark that the TON is not valid
+            }
           }
+        } else { // If it's a rising edge
+          lastRisingEdgeTime = currentTime; // Update the time of the last rising edge
+          uint32_t period = currentTime - lastPeriodTime;
+          if (period >= periodMin && period <= periodMax) { // Check if the period is valid
+            lastValidTon = true; // Mark that the TON is valid
+          }
+        }
+      }
+      break;
+          
+    case COUPLING:
+    if (signalState == previousSignalState) { // If the current state of the input has not changed compared to the previous one
+      // Check if the maximum value of TON (if the current state is high) or the maximum value of T (if it's low) has been exceeded
+      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) || (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {
+        lastValidTon = false; // Declare the last TON invalid
+        currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+        digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+      }
+    } else { // If the current state has changed
+      if (!signalState) { // If it's a falling edge
+        uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
+        if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) { // If the pulse width is not within TON_min and TON_max
+          lastValidTon = false; // Declare the last TON invalid
+          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+          digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+        }
+      } else { // If it's a rising edge
+        uint32_t period = currentTime - lastRisingEdgeTime;
+        if (period >= periodMin && period <= periodMax) { // If the period is within T_min and T_max
+          currentState = COUPLED; // Go to the COUPLED state
+          digitalWrite(OUTPUT_PIN, HIGH); // Turn on the output
         } else {
-          currentState = UNCOUPLED;
+          lastValidTon = false; // Declare the last TON invalid
+          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+          digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
         }
       }
-      break;
+    }
+    break;
+
     case COUPLED:
-      if (signalState) {
-        lastTime = currentTime;
-      } else {
-        period = currentTime - lastTime;
-        if (period < periodMin || period > periodMax) {
-          currentState = UNCOUPLED;
-          digitalWrite(OUTPUT_PIN, LOW); // Stop recognition signal
+    if (signalState == previousSignalState) { // If the current state of the input has not changed compared to the previous one
+      // Check if the maximum value of TON (if the current state is high) or the maximum value of T (if it's low) has been exceeded
+      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) || (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {
+        lastValidTon = false; // Declare the last TON invalid
+        currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+        digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+      }
+    } else { // If the current state has changed
+      if (!signalState) { // If it's a falling edge
+        uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
+        if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) { // If the pulse width is not within TON_min and TON_max
+          lastValidTon = false; // Declare the last TON invalid
+          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+          digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+        }
+      } else { // If it's a rising edge
+        uint32_t period = currentTime - lastRisingEdgeTime;
+        if (!(period >= periodMin && period <= periodMax)) { // If the period is not within T_min and T_max
+          lastValidTon = false; // Declare the last TON invalid
+          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+          digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
         }
       }
-      break;
-    default:
-      currentState = UNCOUPLED;
-      break;
+    }
+    break; 
+          
   }
     
+  previousSignalState = signalState; // Update the previous signal state
+          
 }
 
 // Print the permissible range for the frequency
