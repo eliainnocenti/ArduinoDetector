@@ -1,5 +1,8 @@
 // Embedded System Host-Target - Arduino Detector script
 
+// us = MicroSeconds
+// mHz = MicroHertz
+
 // Minimum and maximum limits of frequency and duty cycle
 #define MIN_FREQ                    (250)         /* Minimum frequency (in mHz) */
 #define MAX_FREQ                    (100000)      /* Maximum frequency (in mHz) */
@@ -198,7 +201,6 @@ static void printConfig(void) {
   SerialUSB.print("  Output PIN: D");
   SerialUSB.println(OUTPUT_PIN, DEC);
 }
-
 
 // Calculate min/max period and min/max pulse width in microseconds. Configure INPUT_PIN and OUTPUT_PIN as input/output.
 static void configure(void) {
