@@ -192,6 +192,7 @@ void loop() {
           currentState = UNCOUPLED; // Go back to the UNCOUPLED state
           digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
         }
+        lastRisingEdgeTime = currentTime; // Update the time of the last rising edge
       }
     }
     break; 
