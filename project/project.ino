@@ -69,7 +69,7 @@ void setup() {
     if (tmp != NULL) {
       value = strtoul(tmp.c_str(), NULL, 10);
       if (value >= MIN_FREQ && value <= MAX_FREQ) {
-        frequency = (uint32_t)value;
+        frequency = (uint32_t)value;                              
         bValid = 1;
       }
       else {
@@ -182,7 +182,7 @@ void loop() {
         }
       } else {                                                                  // If it's a rising edge
         uint32_t period = currentTime - lastRisingEdgeTime;
-        lastRisingEdgeTime = currentTime;
+        lastRisingEdgeTime = currentTime;                                       //update last rising edge time because we had a rising edge
         if (!(period >= periodMin && period <= periodMax)) {                    // If the period is not within T_min and T_max
           lastValidTon = false;                                                 // Declare the last TON invalid
           currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
