@@ -158,7 +158,7 @@ void loop() {
           lastValidTon = false;                                                 // Declare the last TON invalid
           currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
         }
-        lastRisingEdgeTime = currentTime;
+        lastRisingEdgeTime = currentTime;                                       // Update the time of the last rising edge
       }
     }
     break;
