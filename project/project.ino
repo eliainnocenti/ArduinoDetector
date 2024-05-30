@@ -113,20 +113,20 @@ void loop() {
   switch(currentState) {
           
     case UNCOUPLED:
-      if (signalState != previousSignalState) { // If the current state has changed compared to the previous one
-        if (!signalState) { // If it's a falling edge
-          uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
-          if (pulseWidth >= tOnMin && pulseWidth <= tOnMax) { // Check if the TON is valid
+      if (signalState != previousSignalState) {                                 // If the current state has changed compared to the previous one
+        if (!signalState) {                                                     // If it's a falling edge
+          uint32_t pulseWidth = currentTime - lastRisingEdgeTime;               
+          if (pulseWidth >= tOnMin && pulseWidth <= tOnMax) {                   // Check if the TON is valid
             lastValidTon = true;
           } else {
             lastValidTon = false;
           }
-        } else { // If it's a rising edge
-          lastRisingEdgeTime = currentTime; // Update the time of the last rising edge
-          uint32_t period = currentTime - lastPeriodTime;
-          if (period >= periodMin && period <= periodMax && lastValidTon) { // Check if the period is valid
-            lastPeriodTime = currentTime; // Update the last period time
-            currentState = COUPLING; // Go to the COUPLING state
+        } else {                                                                // If it's a rising edge
+          lastRisingEdgeTime = currentTime;                                     // Update the time of the last rising edge
+          uint32_t period = currentTime - lastPeriodTime;                       // Update the period
+          if (period >= periodMin && period <= periodMax && lastValidTon) {     // Check if the period is valid
+            lastPeriodTime = currentTime;                                       // Update the last period time
+            currentState = COUPLING;                                            // Go to the COUPLING state
           } else {
             lastValidTon = false;
           }
@@ -135,27 +135,28 @@ void loop() {
       break;
 
     case COUPLING:
-    if (signalState == previousSignalState) { // If the current state of the input has not changed compared to the previous one
-      // Check if the maximum value of TRON (if the current state is high) or the maximum value of T (if it's low) has been exceeded
-      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) || (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {
-        lastValidTon = false; // Declare the last TON invalid
-        currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+    if (signalState == previousSignalState) {                                   // If the current state of the input has not changed compared to 
+                                                                                // the previous one                                                   
+      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) ||       // Check if the maximum value of TRON (if the current state is high) or 
+          (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {   // the maximum value of T (if it's low) has been exceeded
+        lastValidTon = false;                                                   // Declare the last TON invalid
+        currentState = UNCOUPLED;                                               // Go back to the UNCOUPLED state
       }
-    } else { // If the current state has changed
-      if (!signalState) { // If it's a falling edge
+    } else {                                                                    // If the current state has changed
+      if (!signalState) {                                                       // If it's a falling edge
         uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
-        if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) { // If the pulse width is not within TON_min and TON_max
-          lastValidTon = false; // Declare the last TON invalid
-          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+        if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) {                  // If the pulse width is not within TON_min and TON_max
+          lastValidTon = false;                                                 // Declare the last TON invalid
+          currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
         }
-      } else { // If it's a rising edge
+      } else {                                                                  // If it's a rising edge
         uint32_t period = currentTime - lastRisingEdgeTime;
-        if (period >= periodMin && period <= periodMax) { // If the period is within T_min and T_max
-          currentState = COUPLED; // Go to the COUPLED state
-          digitalWrite(OUTPUT_PIN, HIGH); // Turn on the output
+        if (period >= periodMin && period <= periodMax) {                       // If the period is within T_min and T_max
+          currentState = COUPLED;                                               // Go to the COUPLED state
+          digitalWrite(OUTPUT_PIN, HIGH);                                       // Turn on the output
         } else {
-          lastValidTon = false; // Declare the last TON invalid
-          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
+          lastValidTon = false;                                                 // Declare the last TON invalid
+          currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
         }
         lastRisingEdgeTime = currentTime;
       }
@@ -163,30 +164,31 @@ void loop() {
     break;
 
     case COUPLED:
-    if (signalState == previousSignalState) { // If the current state of the input has not changed compared to the previous one
-      // Check if the maximum value of TON (if the current state is high) or the maximum value of T (if it's low) has been exceeded
-      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) || (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {
-        lastValidTon = false; // Declare the last TON invalid
-        currentState = UNCOUPLED; // Go back to the UNCOUPLED state
-        digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+    if (signalState == previousSignalState) {                                   // If the current state of the input has not changed compared to 
+                                                                                // the previous one
+      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) ||       // Check if the maximum value of TON (if the current state is high) or 
+          (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {   // the maximum value of T (if it's low) has been exceeded
+        lastValidTon = false;                                                   // Declare the last TON invalid
+        currentState = UNCOUPLED;                                               // Go back to the UNCOUPLED state
+        digitalWrite(OUTPUT_PIN, LOW);                                          // Turn off the output
       }
-    } else { // If the current state has changed
-      if (!signalState) { // If it's a falling edge
+    } else {                                                                    // If the current state has changed
+      if (!signalState) {                                                       // If it's a falling edge
         uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
-        if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) { // If the pulse width is not within TON_min and TON_max
-          lastValidTon = false; // Declare the last TON invalid
-          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
-          digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+        if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) {                  // If the pulse width is not within TON_min and TON_max
+          lastValidTon = false;                                                 // Declare the last TON invalid
+          currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
+          digitalWrite(OUTPUT_PIN, LOW);                                        // Turn off the output
         }
-      } else { // If it's a rising edge
+      } else {                                                                  // If it's a rising edge
         uint32_t period = currentTime - lastRisingEdgeTime;
         lastRisingEdgeTime = currentTime;
-        if (!(period >= periodMin && period <= periodMax)) { // If the period is not within T_min and T_max
-          lastValidTon = false; // Declare the last TON invalid
-          currentState = UNCOUPLED; // Go back to the UNCOUPLED state
-          digitalWrite(OUTPUT_PIN, LOW); // Turn off the output
+        if (!(period >= periodMin && period <= periodMax)) {                    // If the period is not within T_min and T_max
+          lastValidTon = false;                                                 // Declare the last TON invalid
+          currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
+          digitalWrite(OUTPUT_PIN, LOW);                                        // Turn off the output
         }
-        lastRisingEdgeTime = currentTime; // Update the time of the last rising edge
+        lastRisingEdgeTime = currentTime;                                       // Update the time of the last rising edge
       }
     }
     break; 
