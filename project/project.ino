@@ -248,7 +248,7 @@ static void printConfig(void) {
 // Calculate min/max period and min/max pulse width in microseconds. Configure INPUT_PIN and OUTPUT_PIN as input/output.
 static void configure(void) {
 
-  periodMin = (uint32_t)((NSEC_IN_SEC / (frequency + (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);  //NSEC_IN_SEC = 1
+  periodMin = (uint32_t)((NSEC_IN_SEC / (frequency + (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);  // NSEC_IN_SEC = 1
   periodMax = (uint32_t)((NSEC_IN_SEC / (frequency - (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);
   
   tOnMin = (uint32_t)(periodMin * (dutyCycle - TOLERANCE_DUTY) / HUNDRED);
