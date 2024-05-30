@@ -95,27 +95,63 @@ void setup() {
 
   configure();
   printConfig();
-  SerialUSB.end();   
+  //SerialUSB.end();   
 }
 
 // List of static variables used in loop
+static uint32_t currentTime = 0;
+static bool signalState = false;
 static uint32_t lastRisingEdgeTime = 0;
 static uint32_t lastPeriodTime = 0;
 static bool lastValidTon = false;
 static bool previousSignalState = LOW;
+static uint32_t pulseWidth = 0;
+static uint32_t period = 0;
+static int looz = 0;
+
+static void printVariables(void) {
+
+  SerialUSB.println("Variables");
+  SerialUSB.print("- loop: ");
+  SerialUSB.println(looz);
+  SerialUSB.print("- currentTime: ");
+  SerialUSB.println(currentTime);
+  SerialUSB.print("- signalState: ");
+  SerialUSB.println(signalState);
+  SerialUSB.print("- lastRisingEdgeTime: ");
+  SerialUSB.println(lastRisingEdgeTime);
+  SerialUSB.print("- lastPeriodTime: ");
+  SerialUSB.println(lastPeriodTime);
+  SerialUSB.print("- lastValidTon: ");
+  SerialUSB.println(lastValidTon);
+  SerialUSB.print("- previousSignalState: ");
+  SerialUSB.println(previousSignalState);
+  SerialUSB.print("- pulseWidth: ");
+  SerialUSB.println(pulseWidth);
+  SerialUSB.print("- period: ");
+  SerialUSB.println(period);
+  SerialUSB.println();
+
+}
 
 // Loop function: implements the FSM to recognise the configured frequency 
 void loop() {
 
-  uint32_t currentTime = micros();
-  bool signalState = digitalRead(INPUT_PIN);
+  looz++;
 
-  switch(currentState) {
-          
+  SerialUSB.print("Current state: ");
+  SerialUSB.println(currentState);
+
+  currentTime = micros();
+  signalState = digitalRead(INPUT_PIN);
+
+  switch(currentState) {      
     case UNCOUPLED:
+      printVariables();
       if (signalState != previousSignalState) {                                 // If the current state has changed compared to the previous one
         if (!signalState) {                                                     // If it's a falling edge
-          uint32_t pulseWidth = currentTime - lastRisingEdgeTime;               
+          pulseWidth = currentTime - lastRisingEdgeTime;               
+          printVariables();
           if (pulseWidth >= tOnMin && pulseWidth <= tOnMax) {                   // Check if the TON is valid
             lastValidTon = true;
           } else {
@@ -123,9 +159,11 @@ void loop() {
           }
         } else {                                                                // If it's a rising edge
           lastRisingEdgeTime = currentTime;                                     // Update the time of the last rising edge
-          uint32_t period = currentTime - lastPeriodTime;                       // Update the period
+          period = currentTime - lastPeriodTime;                                // Update the period
+          lastPeriodTime = currentTime;                                         // Update the last period time
+          printVariables();
           if (period >= periodMin && period <= periodMax && lastValidTon) {     // Check if the period is valid
-            lastPeriodTime = currentTime;                                       // Update the last period time
+            //lastPeriodTime = currentTime;                                     // Update the last period time
             currentState = COUPLING;                                            // Go to the COUPLING state
           } else {
             lastValidTon = false;
@@ -144,13 +182,13 @@ void loop() {
       }
     } else {                                                                    // If the current state has changed
       if (!signalState) {                                                       // If it's a falling edge
-        uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
+        pulseWidth = currentTime - lastRisingEdgeTime;
         if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) {                  // If the pulse width is not within TON_min and TON_max
           lastValidTon = false;                                                 // Declare the last TON invalid
           currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
         }
       } else {                                                                  // If it's a rising edge
-        uint32_t period = currentTime - lastRisingEdgeTime;
+        period = currentTime - lastRisingEdgeTime;
         if (period >= periodMin && period <= periodMax) {                       // If the period is within T_min and T_max
           currentState = COUPLED;                                               // Go to the COUPLED state
           digitalWrite(OUTPUT_PIN, HIGH);                                       // Turn on the output
@@ -174,14 +212,14 @@ void loop() {
       }
     } else {                                                                    // If the current state has changed
       if (!signalState) {                                                       // If it's a falling edge
-        uint32_t pulseWidth = currentTime - lastRisingEdgeTime;
+        pulseWidth = currentTime - lastRisingEdgeTime;
         if (!(pulseWidth >= tOnMin && pulseWidth <= tOnMax)) {                  // If the pulse width is not within TON_min and TON_max
           lastValidTon = false;                                                 // Declare the last TON invalid
           currentState = UNCOUPLED;                                             // Go back to the UNCOUPLED state
           digitalWrite(OUTPUT_PIN, LOW);                                        // Turn off the output
         }
       } else {                                                                  // If it's a rising edge
-        uint32_t period = currentTime - lastRisingEdgeTime;
+        period = currentTime - lastRisingEdgeTime;
         lastRisingEdgeTime = currentTime;                                       //update last rising edge time because we had a rising edge
         if (!(period >= periodMin && period <= periodMax)) {                    // If the period is not within T_min and T_max
           lastValidTon = false;                                                 // Declare the last TON invalid
