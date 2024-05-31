@@ -109,8 +109,8 @@ static uint32_t pulseWidth = 0;
 static uint32_t period = 0;
 static int looz = 0;
 
+// Debug function
 static void printVariables(void) {
-
   SerialUSB.println("Variables");
   SerialUSB.print("- loop: ");
   SerialUSB.println(looz);
@@ -131,27 +131,28 @@ static void printVariables(void) {
   SerialUSB.print("- period: ");
   SerialUSB.println(period);
   SerialUSB.println();
-
 }
 
 // Loop function: implements the FSM to recognise the configured frequency 
 void loop() {
+    
+  // FIXME
 
-  looz++;
+  looz++; // debug
 
-  SerialUSB.print("Current state: ");
-  SerialUSB.println(currentState);
+  SerialUSB.print("Current state: "); // debug
+  SerialUSB.println(currentState); // debug
 
   currentTime = micros();
   signalState = digitalRead(INPUT_PIN);
 
   switch(currentState) {      
     case UNCOUPLED:
-      printVariables();
+      printVariables(); // debug
       if (signalState != previousSignalState) {                                 // If the current state has changed compared to the previous one
         if (!signalState) {                                                     // If it's a falling edge
           pulseWidth = currentTime - lastRisingEdgeTime;               
-          printVariables();
+          printVariables(); // debug
           if (pulseWidth >= tOnMin && pulseWidth <= tOnMax) {                   // Check if the TON is valid
             lastValidTon = true;
           } else {
@@ -161,7 +162,7 @@ void loop() {
           lastRisingEdgeTime = currentTime;                                     // Update the time of the last rising edge
           period = currentTime - lastPeriodTime;                                // Update the period
           lastPeriodTime = currentTime;                                         // Update the last period time
-          printVariables();
+          printVariables(); // debug
           if (period >= periodMin && period <= periodMax && lastValidTon) {     // Check if the period is valid
             //lastPeriodTime = currentTime;                                     // Update the last period time
             currentState = COUPLING;                                            // Go to the COUPLING state
@@ -285,6 +286,8 @@ static void printConfig(void) {
 
 // Calculate min/max period and min/max pulse width in microseconds. Configure INPUT_PIN and OUTPUT_PIN as input/output.
 static void configure(void) {
+    
+  // FIXME
 
   periodMin = (uint32_t)((NSEC_IN_SEC / (frequency + (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);  // NSEC_IN_SEC = 1
   periodMax = (uint32_t)((NSEC_IN_SEC / (frequency - (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);
