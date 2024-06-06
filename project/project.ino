@@ -104,7 +104,7 @@ static bool signalState = false;
 static uint32_t lastRisingEdgeTime = 0;
 static uint32_t lastPeriodTime = 0;
 static bool lastValidTon = false;
-static bool previousSignalState = LOW;
+static bool previousSignalState = 0;
 static uint32_t pulseWidth = 0;
 static uint32_t period = 0;
 static int looz = 0;
@@ -135,24 +135,23 @@ static void printVariables(void) {
 
 // Loop function: implements the FSM to recognise the configured frequency 
 void loop() {
-    
-  // FIXME
 
   looz++; // debug
 
-  SerialUSB.print("Current state: "); // debug
-  SerialUSB.println(currentState); // debug
+  //SerialUSB.print("Current state: "); // debug
+  //SerialUSB.println(currentState); // debug
 
   currentTime = micros();
   signalState = digitalRead(INPUT_PIN);
 
+  //SerialUSB.print("Signal state: "); // debug
+  //SerialUSB.println(signalState); // debug
+
   switch(currentState) {      
     case UNCOUPLED:
-      printVariables(); // debug
       if (signalState != previousSignalState) {                                 // If the current state has changed compared to the previous one
         if (!signalState) {                                                     // If it's a falling edge
           pulseWidth = currentTime - lastRisingEdgeTime;               
-          printVariables(); // debug
           if (pulseWidth >= tOnMin && pulseWidth <= tOnMax) {                   // Check if the TON is valid
             lastValidTon = true;
           } else {
@@ -162,9 +161,7 @@ void loop() {
           lastRisingEdgeTime = currentTime;                                     // Update the time of the last rising edge
           period = currentTime - lastPeriodTime;                                // Update the period
           lastPeriodTime = currentTime;                                         // Update the last period time
-          printVariables(); // debug
           if (period >= periodMin && period <= periodMax && lastValidTon) {     // Check if the period is valid
-            //lastPeriodTime = currentTime;                                     // Update the last period time
             currentState = COUPLING;                                            // Go to the COUPLING state
           } else {
             lastValidTon = false;
@@ -176,7 +173,7 @@ void loop() {
     case COUPLING:
     if (signalState == previousSignalState) {                                   // If the current state of the input has not changed compared to 
                                                                                 // the previous one                                                   
-      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) ||       // Check if the maximum value of TRON (if the current state is high) or 
+      if ((signalState && (currentTime - lastRisingEdgeTime) > tOnMax) ||       // Check if the maximum value of TON (if the current state is high) or 
           (!signalState && (currentTime - lastRisingEdgeTime) > periodMax)) {   // the maximum value of T (if it's low) has been exceeded
         lastValidTon = false;                                                   // Declare the last TON invalid
         currentState = UNCOUPLED;                                               // Go back to the UNCOUPLED state
@@ -233,9 +230,9 @@ void loop() {
     break; 
           
   }
-    
-  previousSignalState = signalState; // Update the previous signal state
-          
+
+  previousSignalState = signalState;                                          // Update the previous signal state
+       
 }
 
 // Print the permissible range for the frequency
@@ -286,17 +283,17 @@ static void printConfig(void) {
 
 // Calculate min/max period and min/max pulse width in microseconds. Configure INPUT_PIN and OUTPUT_PIN as input/output.
 static void configure(void) {
-    
-  // FIXME
+  uint32_t freq;
 
-  periodMin = (uint32_t)((NSEC_IN_SEC / (frequency + (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);  // NSEC_IN_SEC = 1
-  periodMax = (uint32_t)((NSEC_IN_SEC / (frequency - (frequency * TOLERANCE_FREQUENCY / THOUSAND))) / THOUSAND);
-  
-  tOnMin = (uint32_t)(periodMin * (dutyCycle - TOLERANCE_DUTY) / HUNDRED);
-  tOnMax = (uint32_t)(periodMax * (dutyCycle + TOLERANCE_DUTY) / HUNDRED);
+  freq = (((THOUSAND + TOLERANCE_FREQUENCY) * frequency) + (THOUSAND - 1)) / THOUSAND;
+  periodMin = (NSEC_IN_SEC) / freq;
+  freq = (((THOUSAND - TOLERANCE_FREQUENCY) * frequency)) / THOUSAND;
+  periodMax = (NSEC_IN_SEC + (freq - 1)) / freq;
+
+  tOnMin = (periodMin * (dutyCycle - TOLERANCE_DUTY) / HUNDRED);
+  tOnMax = ((periodMax * (dutyCycle + TOLERANCE_DUTY) + (HUNDRED - 1)) / HUNDRED);
   
   pinMode(INPUT_PIN, INPUT);
   pinMode(OUTPUT_PIN, OUTPUT);
   digitalWrite(OUTPUT_PIN, LOW); // Ensure the output pin is initially low
-  
 }
